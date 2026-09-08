@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+message: "If you use these configs in your work, please cite this repository."
+title: "grothlab/configs"
+authors:
+  - family-names: Ruiz-Pérez
+    given-names: Samuel
+    orcid: "https://orcid.org/0000-0002-5577-8341"
+url: "https://github.com/grothlab/configs"
+license: MIT
