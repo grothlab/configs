@@ -5,10 +5,10 @@ on:
       # https://docs.renovatebot.com/key-concepts/automerge/#branch-vs-pr-automerging
       - "renovate/**" # branches Renovate creates
   pull_request:
-    branches: [main]
+    branches: [master]
   merge_group:
     types: [checks_requested]
-    branches: [main]
+    branches: [master]
   workflow_dispatch:
 
 # Cancel if a newer run is started

@@ -6,7 +6,7 @@ about: A new cluster config
 Please follow these steps before submitting your PR:
 
 - [ ] If your PR is a work in progress, include `[WIP]` in its title
-- [ ] Your PR targets the `main` branch
+- [ ] Your PR targets the `master` branch
 - [ ] You've included links to relevant issues, if any
 
 Steps for adding a new config profile:
