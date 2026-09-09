@@ -13,7 +13,7 @@ From the CLI:
 
 ```bash
 nextflow run <pipeline> \
-    --custom_config_base https://raw.githubusercontent.com/grothlab/configs/ \
+    --custom_config_base https://raw.githubusercontent.com/grothlab/configs/master \
     -profile <profile_name>,<...> \
     <...>
 ```
