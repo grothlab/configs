@@ -1,24 +1,35 @@
-# grothlab/configs: KU SUND danhead (ku_sund_danhead_mod) configuration
+# grothlab/configs:  KU SUND danhead (ku_sund_danhead_mod) configuration
 
-To use, run the pipeline with `-profile ku_sund_danhead_mod`. This will download and launch
-the [`ku_sund_danhead_mod.config`](../conf/ku_sund_danhead_mod.config) which has been
-pre-configured with a setup suitable for the `danhead01fl` cluster. It's a modified version
-of the original config by Adrija Kalvisa (`adrija.kalvisa@sund.ku.dk`), disabling `cleanup`
-so completed pipeline runs can still be `-resume`d.
+The `ku_sund_danhead_mod` profile configures grothlab or nf-core pipelines to run on the [KU DAN System cluster](https://sgn102.pages.ku.dk/a-not-long-tour-of-dangpu/).
 
-GPU-labelled processes (label `process_gpu`) automatically get routed to the `gpuqueue`
-partition with a GPU request - no extra flags needed.
+Since grothlab and nf-core pipelines use the `params.custom_config_base` from `nf-core/configs` by default, you must override it to pull the `ku_sund_danhead_mod` profile from `grothlab/configs` instead:
 
-## Node-pinning sub-profiles
+```bash
+nextflow run <pipeline_repo>/<pipeline_name> \
+    --custom_config_base https://raw.githubusercontent.com/grothlab/configs/master \
+    -profile ku_sund_danhead_mod,<...> \
+    <...>
+```
 
-Combine `ku_sund_danhead_mod` with one of these to pin execution to specific compute nodes:
-`dancmpn01fl`, `dancmpn02fl`, `dan_allcmpnodes` (both), `dangpu01fl` (the GPU node).
+## Using GPU resources
 
-## Running Nextflow workflow on danhead
+By default every process will only be able to request CPUs. Add `gpu` to `-profile` so that the processes that are able to use a GPU can also request one:
 
-Nextflow shouldn't run directly on the login/submission node but on a compute node.
+```bash
+nextflow run <pipeline_repo>/<pipeline_name> \
+    --custom_config_base https://raw.githubusercontent.com/grothlab/configs/master \
+    -profile ku_sund_danhead_mod,gpu \
+    <...>
+```
 
-To do so make a shell script with a similar structure to the following code and submit with `sbatch my_script.sh`
+> [!IMPORTANT]
+> Using the `gpu` profile only has an effect on processes that support GPU acceleration. CPU-only processes will not request GPUs even under this profile, so it is safe to add `gpu` when running CPU-only pipelines.
+
+## Example SBATCH script to submit a pipeline run to CPROME
+
+Nextflow should not run on the login/submission node, but on a compute node.
+
+To ensure this, write a shell script with a structure similar to the following and submit it with `sbatch my_script.sh`. Remember to replace the <...> fields:
 
 ```bash
 #!/bin/bash
@@ -30,7 +41,6 @@ To do so make a shell script with a similar structure to the following code and 
 #SBATCH --mem=4gb                   # total requested RAM for the Nextflow head job (4 GB should be enough)
 #SBATCH --time=2-00:00:00           # max. running time of the pipeline job, format in D-HH:MM:SS
 #SBATCH --output=<job_name>.%j.log  # standard output and error log, '%j' gives the job ID
-#SBATCH --account=<slurm_account>   # slurm account to submit this job with
 
 # Load the required modules
 module purge
@@ -43,7 +53,8 @@ cd <path_to_project_directory>/output/
 # Run a public pipeline
 nextflow run <pipeline_repo>/<pipeline_name> \
     -r <pipeline_version> \
-    -profile ku_sund_danhead_mod \
+    --custom_config_base https://raw.githubusercontent.com/grothlab/configs/master \
+    -profile ku_sund_danhead_mod,gpu \
     -params-file <path_to_project_directory>/<params_file_yaml> \
     -work-dir <path_to_project_directory>/output/work/ \
     -resume

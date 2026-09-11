@@ -1,27 +1,47 @@
 # grothlab/configs: CPROME (ku_cpromegate) configuration
 
-To use, run the pipeline with `-profile ku_cpromegate,<account>` (where `<account>` is one
-of the per-project sub-profiles below, e.g. `cpr_ag`). This will download and launch the
-[`ku_cpromegate.config`](../conf/ku_cpromegate.config) which has been pre-configured with a
-setup suitable for the CPROME cluster (see the
-[CPROME user guide](https://cprgpu.gitbook.io/cprgpu-user-guide/)).
+The `ku_cpromegate` profile configures grothlab or nf-core pipelines to run on the [KU CPROME cluster](https://cprgpu.gitbook.io/cprgpu-user-guide/).
 
-GPU-labelled processes (label `process_gpu`) automatically get routed to the `a100`
-partition with a GPU request - no extra flags needed.
+Since grothlab and nf-core pipelines use the `params.custom_config_base` from `nf-core/configs` by default, you must override it to pull the `ku_cpromegate` profile from `grothlab/configs` instead:
+
+```bash
+nextflow run <pipeline_repo>/<pipeline_name> \
+    --custom_config_base https://raw.githubusercontent.com/grothlab/configs/master \
+    -profile ku_cpromegate,<...> \
+    <...>
+```
 
 ## Per-project sub-profiles
 
-Combine `ku_cpromegate` with one of these to set the SLURM account and scratch bind mounts
-for your project: `cpr_ag`, `cpr_mx`, `cpr_sbmm`, `cpr_mito`, `cpr_mln`, `cpr_nm`,
+Combine `ku_cpromegate` with one of these to set the SLURM account for your project: `cpr_ag`, `cpr_mx`, `cpr_sbmm`, `cpr_mito`, `cpr_mln`, `cpr_nm`,
 `cpr_duxin`, `cpr_nilsson`, `cpr_crc`, `cpr_nk`, `cpr_mann`, `cpr_jensen`, `cpr_share`.
 
-Add `long_queue` as well for a larger executor queue size on long-running submissions.
+```bash
+nextflow run <pipeline_repo>/<pipeline_name> \
+    --custom_config_base https://raw.githubusercontent.com/grothlab/configs/master \
+    -profile ku_cpromegate,cpr_<...> \
+    <...>
+```
 
-## Running Nextflow workflow on CPROME
+## Using GPU resources
 
-Nextflow shouldn't run directly on the login/submission node but on a compute node.
+By default every process will only be able to request CPUs. Add `gpu` to `-profile` so that the processes that are able to use a GPU can also request one:
 
-To do so make a shell script with a similar structure to the following code and submit with `sbatch my_script.sh`
+```bash
+nextflow run <pipeline_repo>/<pipeline_name> \
+    --custom_config_base https://raw.githubusercontent.com/grothlab/configs/master \
+    -profile ku_cpromegate,cpr_<...>,gpu \
+    <...>
+```
+
+> [!IMPORTANT]
+> Using the `gpu` profile only has an effect on processes that support GPU acceleration. CPU-only processes will not request GPUs even under this profile, so it is safe to add `gpu` when running CPU-only pipelines.
+
+## Example SBATCH script to submit a pipeline run to CPROME
+
+Nextflow should not run on the login/submission node, but on a compute node.
+
+To ensure this, write a shell script with a structure similar to the following and submit it with `sbatch my_script.sh`. Remember to replace the <...> fields:
 
 ```bash
 #!/bin/bash
@@ -46,7 +66,8 @@ cd <path_to_project_directory>/output/
 # Run a public pipeline
 nextflow run <pipeline_repo>/<pipeline_name> \
     -r <pipeline_version> \
-    -profile ku_cpromegate,<slurm_account> \
+    --custom_config_base https://raw.githubusercontent.com/grothlab/configs/master \
+    -profile ku_cpromegate,cpr_<...>,gpu \
     -params-file <path_to_project_directory>/<params_file_yaml> \
     -work-dir <path_to_project_directory>/output/work/ \
     -resume
