@@ -56,6 +56,5 @@ nextflow run <pipeline_repo>/<pipeline_name> \
     --custom_config_base https://raw.githubusercontent.com/grothlab/configs/master \
     -profile ku_sund_danhead_mod,gpu \
     -params-file <path_to_project_directory>/<params_file_yaml> \
-    -work-dir <path_to_project_directory>/output/work/ \
-    -resume
+    -ansi-log false 
 ```
